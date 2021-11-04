@@ -8,6 +8,7 @@ impl Plugin for MainMenuPlugin {
             .add_startup_system(spawn_camera_system.system())
             .add_startup_system(spawn_menu_system.system())
             .add_system(button_system.system())
+            .add_system(exit_game_button_system.system())
             .add_system(quit_on_escape_system.system());
     }
 }
@@ -41,11 +42,9 @@ fn spawn_menu_system(
                         .with_children(|parent| {
                             parent.spawn_bundle(new_game_button_text);
                         });
-                    parent
-                        .spawn_bundle(options_button)
-                        .with_children(|parent| {
-                            parent.spawn_bundle(options_button_text);
-                        });
+                    parent.spawn_bundle(options_button).with_children(|parent| {
+                        parent.spawn_bundle(options_button_text);
+                    });
                     parent
                         .spawn_bundle(exit_game_button)
                         .with_children(|parent| {
@@ -162,6 +161,17 @@ fn button_system(
             Interaction::Clicked => menu_materials.button_pressed.clone(),
             Interaction::Hovered => menu_materials.button_hovered.clone(),
             Interaction::None => menu_materials.button_normal.clone(),
+        }
+    }
+}
+
+fn exit_game_button_system(
+    mut interaction_query: Query<&Interaction, (Changed<Interaction>, With<Button>)>,
+    mut writer: EventWriter<AppExit>,
+) {
+    for interaction in interaction_query.iter_mut() {
+        if *interaction == Interaction::Clicked {
+            writer.send(AppExit);
         }
     }
 }
