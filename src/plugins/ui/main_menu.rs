@@ -8,6 +8,7 @@ impl Plugin for MainMenuPlugin {
             .add_startup_system(spawn_camera_system.system())
             .add_startup_system(spawn_menu_system.system())
             .add_system(button_system.system())
+            .add_system(options_menu_button_system.system())
             .add_system(exit_game_button_system.system())
             .add_system(quit_on_escape_system.system());
     }
@@ -16,6 +17,8 @@ impl Plugin for MainMenuPlugin {
 fn spawn_camera_system(mut commands: Commands) {
     commands.spawn_bundle(UiCameraBundle::default());
 }
+
+struct MainMenu;
 
 fn spawn_menu_system(
     mut commands: Commands,
@@ -33,18 +36,23 @@ fn spawn_menu_system(
 
     commands
         .spawn_bundle(root_container)
+        .insert(MainMenu)
         .with_children(|parent| {
             parent
                 .spawn_bundle(buttons_container)
                 .with_children(|parent| {
                     parent
                         .spawn_bundle(new_game_button)
+                        .insert(NewGameButton)
                         .with_children(|parent| {
                             parent.spawn_bundle(new_game_button_text);
                         });
-                    parent.spawn_bundle(options_button).with_children(|parent| {
-                        parent.spawn_bundle(options_button_text);
-                    });
+                    parent
+                        .spawn_bundle(options_button)
+                        .insert(OptionsButton)
+                        .with_children(|parent| {
+                            parent.spawn_bundle(options_button_text);
+                        });
                     parent
                         .spawn_bundle(exit_game_button)
                         .insert(ExitGameButton)
@@ -170,14 +178,27 @@ fn button_system(
     }
 }
 
+fn options_menu_button_system(
+    mut interaction_query: Query<
+        &Interaction,
+        (Changed<Interaction>, With<Button>, With<OptionsButton>),
+    >,
+    mut menu_query: Query<Entity, With<MainMenu>>,
+    mut commands: Commands,
+) {
+    for interaction in interaction_query.iter_mut() {
+        if *interaction == Interaction::Clicked {
+            for menu in menu_query.iter_mut() {
+                commands.entity(menu).remove_bundle::<NodeBundle>();
+            }
+        }
+    }
+}
+
 fn exit_game_button_system(
     mut interaction_query: Query<
         &Interaction,
-        (
-            Changed<Interaction>,
-            With<Button>,
-            With<ExitGameButton>,
-        ),
+        (Changed<Interaction>, With<Button>, With<ExitGameButton>),
     >,
     mut writer: EventWriter<AppExit>,
 ) {
