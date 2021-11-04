@@ -47,6 +47,7 @@ fn spawn_menu_system(
                     });
                     parent
                         .spawn_bundle(exit_game_button)
+                        .insert(ExitGameButton)
                         .with_children(|parent| {
                             parent.spawn_bundle(exit_game_button_text);
                         });
@@ -129,6 +130,10 @@ fn create_button_text(asset_server: &Res<AssetServer>, text: &str) -> TextBundle
     }
 }
 
+struct NewGameButton;
+struct OptionsButton;
+struct ExitGameButton;
+
 struct MenuMaterials {
     background: Handle<ColorMaterial>,
     button_normal: Handle<ColorMaterial>,
@@ -166,7 +171,14 @@ fn button_system(
 }
 
 fn exit_game_button_system(
-    mut interaction_query: Query<&Interaction, (Changed<Interaction>, With<Button>)>,
+    mut interaction_query: Query<
+        &Interaction,
+        (
+            Changed<Interaction>,
+            With<Button>,
+            With<ExitGameButton>,
+        ),
+    >,
     mut writer: EventWriter<AppExit>,
 ) {
     for interaction in interaction_query.iter_mut() {
