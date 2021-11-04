@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{app::AppExit, prelude::*};
 
 pub struct MainMenuPlugin;
 
@@ -7,7 +7,8 @@ impl Plugin for MainMenuPlugin {
         app.init_resource::<ButtonMaterials>()
             .add_startup_system(spawn_camera_system.system())
             .add_startup_system(spawn_menu_system.system())
-            .add_system(button_system.system());
+            .add_system(button_system.system())
+            .add_system(quit_on_escape_system.system());
     }
 }
 
@@ -143,5 +144,11 @@ fn button_system(
                 *material = button_materials.normal.clone();
             }
         }
+    }
+}
+
+fn quit_on_escape_system(keyboard_input: Res<Input<KeyCode>>, mut writer: EventWriter<AppExit>) {
+    if keyboard_input.pressed(KeyCode::Escape) {
+        writer.send(AppExit);
     }
 }
