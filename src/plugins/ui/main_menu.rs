@@ -189,7 +189,7 @@ fn options_menu_button_system(
     for interaction in interaction_query.iter_mut() {
         if *interaction == Interaction::Clicked {
             for menu in menu_query.iter_mut() {
-                commands.entity(menu).remove_bundle::<NodeBundle>();
+                commands.entity(menu).despawn_recursive();
             }
         }
     }
